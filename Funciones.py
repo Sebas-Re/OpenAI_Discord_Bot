@@ -28,6 +28,18 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message["content"]
 
+def get_image(prompt):
+    response = openai.Image.create(
+    prompt=prompt,
+    n=1,
+    size="1024x1024"
+)
+    image_url = response['data'][0]['url']
+    return image_url
+
+
+
+
 
 # Carga los server settings, atrapando la excepcion en caso de que no exista el archivo
 def load_server_settings():

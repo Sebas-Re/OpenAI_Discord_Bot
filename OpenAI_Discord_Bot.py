@@ -118,6 +118,20 @@ async def consulta(interaction: discord.Interaction, consulta: str):
     await interaction.edit_original_response(content=response)
     
 
+# Comando para consultar a OpenAI 
+@bot.tree.command()
+@app_commands.describe(prompt='Prompt para generar la imagen')
+async def imagine(interaction: discord.Interaction, prompt: str):
+
+    await interaction.response.defer()
+
+    response = Funciones.get_image(prompt)
+    print("User ["+interaction.user.name+"] >> "+prompt)
+    print("[OpenAI] >> "+response)
+
+    await interaction.edit_original_response(content=response)
+
+
 bot.run(Secreto.Bot_Token)
 
 
