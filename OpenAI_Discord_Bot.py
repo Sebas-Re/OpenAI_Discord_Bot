@@ -29,7 +29,6 @@ class MyClient(discord.Client):
 
 
 bot = MyClient(intents=discord.Intents.all())
-server_settings = {}
 
 
 # Set up the OpenAI API key
@@ -41,34 +40,16 @@ channels = [258435872020627463, 449413264443441152, 1104014621200883722, 1104014
 processed_messages = set()
 
 
-# Obtener la ruta del directorio actual
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-# Concatenar el nombre del archivo al final de la ruta
-file_path = os.path.join(dir_path, 'server_settings.pickle')
-
-
-
 
 # Cuando el bot se conecta, cambia su nombre a 'Yggdrasil' y lo informa en consola
 @bot.event
 async def on_ready():
+
     await bot.user.edit(username='El Oráculo')
     print(f'Logged in as {bot.user}!')
 
-    # Carga los server settings, atrapando la excepcion en caso de que no exista el archivo
-    try:
-        with open(file_path, 'rb') as f:
-            global server_settings
-            server_settings= pickle.load(f)
-            f.close()
-    except FileNotFoundError: 
-        server_settings = {}
-        with open(file_path, 'wb') as f:
-            pickle.dump(server_settings, f)
-            f.close()
-
-
+    Funciones.load_server_settings()
+    
 
 
 
@@ -80,7 +61,7 @@ async def on_message(message):
     server_id = message.guild.id
 
     # Si el servidor esta en la lista de servidores y la caracteristica esta habilitada, procesa el mensaje
-    if server_id in server_settings and server_settings[server_id].get('feature_enabled', False):
+    if server_id in Funciones.server_settings and Funciones.server_settings[server_id].get('feature_enabled', False):
         if message.author == bot.user:
             return
         else:
@@ -93,12 +74,15 @@ async def on_message(message):
         return
 
 
+
 # Comando para probar que el bot esta vivo
 @bot.tree.command()
 @app_commands.describe()
 async def ping(interaction: discord.Interaction):
     print('Command received')
     await interaction.response.send_message(f'Pong! {round(bot.latency * 1000)}ms')
+
+
 
 # Comando para habilitar/deshabilitar la caracteristica de lectura de chat
 @bot.tree.command()
@@ -109,23 +93,16 @@ async def leerchat(interaction: discord.Interaction):
     # Extrae el id del servidor
     server_id = interaction.guild_id
 
-    # Si el servidor no esta en la lista de servidores, lo agrega
-    if server_id not in server_settings:
-        server_settings[server_id] = {}
-
     # Cambia el estado de la caracteristica
-    server_settings[server_id]['feature_enabled'] = not server_settings[server_id].get('feature_enabled', False)
-
-    # Guarda los cambios en el archivo
-    with open(file_path, 'wb') as f:
-        pickle.dump(server_settings, f)
-        f.close()
+    Funciones.toggle_feature(server_id)
 
     # Informa el estado de la caracteristica
-    if server_settings[server_id]['feature_enabled']:
+    if Funciones.server_settings[server_id]['feature_enabled']:
         await interaction.response.send_message('Caracteristica habilitada.')
     else:
         await interaction.response.send_message('Caracteristica deshabilitada.')
+
+
 
 # Comando para consultar a OpenAI 
 @bot.tree.command()
