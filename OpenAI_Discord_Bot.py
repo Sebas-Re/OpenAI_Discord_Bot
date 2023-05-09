@@ -123,13 +123,16 @@ async def consulta(interaction: discord.Interaction, consulta: str):
 @app_commands.describe(prompt='Prompt para generar la imagen')
 async def imagine(interaction: discord.Interaction, prompt: str):
 
-    await interaction.response.defer()
+    # Restrict the command to the bot owner, basicamente porque es caro y no quiero que se abuse (Ademas de que, seamos honestos, Midjourney es mejor)
+    if interaction.user.id == Secreto.Owner_ID:
+        await interaction.response.defer()
 
-    response = Funciones.get_image(prompt)
-    print("User ["+interaction.user.name+"] >> "+prompt)
-    print("[OpenAI] >> "+response)
-
-    await interaction.edit_original_response(content=response)
+        response = Funciones.get_image(prompt)
+        print("User ["+interaction.user.name+"] >> "+prompt)
+        print("[OpenAI] >> "+response)
+        await interaction.edit_original_response(content=response)
+    else:
+        await interaction.response.send_message('No tienes permiso para usar este comando.')
 
 
 bot.run(Secreto.Bot_Token)
