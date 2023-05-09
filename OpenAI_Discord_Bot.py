@@ -5,6 +5,7 @@ from discord import app_commands
 import openai
 from discord.ext import commands
 import Secreto
+import Funciones
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -47,23 +48,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 file_path = os.path.join(dir_path, 'server_settings.pickle')
 
 
-# Funcion para obtener la respuesta de OpenAI a partir de un prompt
-def get_completion(prompt, model="gpt-3.5-turbo"):
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0, # this is the degree of randomness of the model's output
-        max_tokens=400, # this is the maximum number of tokens that the model will generate
-    )
-    return response.choices[0].message["content"]
-
-
-# Tipos de modelos:
-# gpt-3: el modelo mas grande, pero el mas lento
-# gpt-3.5-turbo: un modelo mas pequeño, pero mas rapido
-# gpt-3.5: un modelo mas pequeño, pero mas rapido
-
 
 
 # Cuando el bot se conecta, cambia su nombre a 'Yggdrasil' y lo informa en consola
@@ -100,10 +84,9 @@ async def on_message(message):
         if message.author == bot.user:
             return
         else:
-            username = message.author.name
             prompt = f"{message.content}"
-            response = get_completion(prompt)
-            print("User ["+username+"] >> "+prompt)
+            response = Funciones.get_completion(prompt)
+            print("User ["+message.author.name+"] >> "+prompt)
             print("[OpenAI] >> "+response)
             await message.reply(response)
     else:
@@ -151,9 +134,9 @@ async def consulta(interaction: discord.Interaction, consulta: str):
 
     await interaction.response.defer()
 
-    response = get_completion(consulta)
-    print("User Message:"+consulta)
-    print("OpenAI Response:"+response)
+    response = Funciones.get_completion(consulta)
+    print("User ["+interaction.user.name+"] >> "+consulta)
+    print("[OpenAI] >> "+response)
 
     await interaction.edit_original_response(content=response)
     
