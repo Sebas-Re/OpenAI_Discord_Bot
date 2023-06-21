@@ -14,12 +14,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 file_path = os.path.join(dir_path, "server_settings.pickle")
 
 # Concatenar el nombre del archivo de audio al final de la ruta
-audio_file_path = os.path.join(dir_path, "transcriptions", "voice_message.mp3")
-
-# Get the absolute path to the audio file
-abs_audio_file_path = os.path.join(audio_file_path)
-
-AudioSegment.ffmpeg = "C:/Program Files/ffmpeg-6.0-full_build/binffmpeg.exe"
+audio_file_path = "transcriptions/voice-message.mp3"
 
 
 # Funcion para obtener la respuesta de OpenAI a partir de un prompt
@@ -52,7 +47,7 @@ async def save_audio_file(message):
     for attachment in message.attachments:
         # Save the audio file to disk
         filename = attachment.filename
-        filepath = f"transcriptions/voice-message.mp3"
+        filepath = audio_file_path
         print("Saving audio file to:", filepath)
         with open(filepath, "wb") as f:
             await attachment.save(f)
@@ -61,17 +56,17 @@ async def save_audio_file(message):
 
 def format_to_mp3():
     # Load the audio file
-    audio_file = AudioSegment.from_file("transcriptions/voice-message.mp3")
+    audio_file = AudioSegment.from_file(audio_file_path)
 
     # Export the audio file in the MP3 format
-    audio_file.export("transcriptions/voice-message.mp3", format="mp3")
+    audio_file.export(audio_file_path, format="mp3")
 
 
 # Funcion para transcribir audio a texto, utilizando el modelo "whisper-1" de OpenAI
 def transcribe_audio():
     format_to_mp3()
 
-    audio_file = open("transcriptions/voice-message.mp3", "rb")
+    audio_file = open(audio_file_path, "rb")
     transcript = openai.Audio.transcribe(model="whisper-1", file=audio_file)
     return transcript.text
 
