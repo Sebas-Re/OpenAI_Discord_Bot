@@ -7,6 +7,7 @@ from discord.ext import commands
 import Secreto
 import Funciones
 
+
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
@@ -27,7 +28,6 @@ class MyClient(discord.Client):
         await self.tree.sync()
 
 
-
 bot = MyClient(intents=discord.Intents.all())
 
 
@@ -35,78 +35,75 @@ bot = MyClient(intents=discord.Intents.all())
 openai.api_key = Secreto.OpenAI_API_KEY
 
 # Set up the Discord bot client
-channels = [258435872020627463, 449413264443441152, 1104014621200883722, 1104014832254070797]
+channels = [
+    258435872020627463,
+    449413264443441152,
+    1104014621200883722,
+    1104014832254070797,
+]
 
 processed_messages = set()
-
 
 
 # Cuando el bot se conecta, cambia su nombre a 'Yggdrasil' y lo informa en consola
 @bot.event
 async def on_ready():
-
-    await bot.user.edit(username='El Oráculo')
-    print(f'Logged in as {bot.user}!')
+    await bot.user.edit(username="El Oráculo")
+    print(f"Logged in as {bot.user}!")
 
     Funciones.load_server_settings()
-    
-
 
 
 # Cada vez que entra un mensaje al canal seleccionado, el bot lo procesa y responde
 @bot.event
 async def on_message(message):
-
     # Extrae el id del servidor
     server_id = message.guild.id
 
     # Si el servidor esta en la lista de servidores y la caracteristica esta habilitada, procesa el mensaje
-    if server_id in Funciones.server_settings and Funciones.server_settings[server_id].get('feature_enabled', False):
+    if server_id in Funciones.server_settings and Funciones.server_settings[
+        server_id
+    ].get("feature_enabled", False):
         if message.author == bot.user:
             return
         else:
             if message.attachments:
-                attachment = message.attachments[0]
-                file_extension = attachment.filename.split(".")[-1]
-                if file_extension in ["ogg"]:
+                if Funciones.isVoiceMessage(message):
                     await Funciones.save_audio_file(message)
-                    #await message.reply('Audio recibido y guardado. Transcribiendo...')
+                    # await message.reply('Audio recibido y guardado. Transcribiendo...')
                     response = Funciones.transcribe_audio()
-                    await message.reply('Mensaje de voz transcripto: \n"'+response+'"')
+                    await message.reply(
+                        'Mensaje de voz transcripto: \n"' + response + '"'
+                    )
                     return
                 else:
-                    await message.reply('No se reconoce el formato del archivo. Solo se aceptan mensajes de voz.')
+                    await message.reply(
+                        "No se reconoce el formato del archivo. Solo se aceptan mensajes de voz."
+                    )
                     return
             elif isinstance(message.content, str):
                 prompt = f"{message.content}"
                 response = Funciones.get_completion(prompt)
-                print("User ["+message.author.name+"] >> "+prompt)
-                print("[OpenAI] >> "+response)
+                print("User [" + message.author.name + "] >> " + prompt)
+                print("[OpenAI] >> " + response)
                 await message.reply(response)
                 return
-
-            
-
-
-        
-
 
 
 # Comando para probar que el bot esta encendido
 @bot.tree.command()
 @app_commands.describe()
 async def ping(interaction: discord.Interaction):
-    print('Command received')
-    await interaction.response.send_message(f'Pong! {round(bot.latency * 1000)}ms')
-
+    print("Command received")
+    await interaction.response.send_message(f"Pong! {round(bot.latency * 1000)}ms")
 
 
 # Comando para habilitar/deshabilitar la caracteristica de lectura de chat
 @bot.tree.command()
 @app_commands.describe()
 async def leerchat(interaction: discord.Interaction):
-    print('Command received')
-    
+    print("Command received")
+
     # Extrae el id del servidor
     server_id = interaction.guild_id
 
@@ -114,46 +111,44 @@ async def leerchat(interaction: discord.Interaction):
     Funciones.toggle_feature(server_id)
 
     # Informa el estado de la caracteristica
-    if Funciones.server_settings[server_id]['feature_enabled']:
-        await interaction.response.send_message('Caracteristica habilitada.')
+    if Funciones.server_settings[server_id]["feature_enabled"]:
+        await interaction.response.send_message("Caracteristica habilitada.")
     else:
-        await interaction.response.send_message('Caracteristica deshabilitada.')
+        await interaction.response.send_message("Caracteristica deshabilitada.")
 
 
-
-# Comando para consultar a OpenAI 
+# Comando para consultar a OpenAI
 @bot.tree.command()
-@app_commands.describe(consulta='Consulta a realizar al bot')
+@app_commands.describe(consulta="Consulta a realizar al bot")
 async def consulta(interaction: discord.Interaction, consulta: str):
-
     await interaction.response.defer()
 
     response = Funciones.get_completion(consulta)
-    print("User ["+interaction.user.name+"] >> "+consulta)
-    print("[OpenAI] >> "+response)
+    print("User [" + interaction.user.name + "] >> " + consulta)
+    print("[OpenAI] >> " + response)
 
     await interaction.edit_original_response(content=response)
-    
 
-# Comando para consultar a OpenAI 
+
+# Comando para consultar a OpenAI
 @bot.tree.command()
-@app_commands.describe(prompt='Prompt para generar la imagen')
+@app_commands.describe(prompt="Prompt para generar la imagen")
 async def imagine(interaction: discord.Interaction, prompt: str):
-
     # Restrict the command to the bot owner, basicamente porque es caro y no quiero que se abuse (Ademas de que, seamos honestos, Midjourney es mejor)
     if interaction.user.id == Secreto.Owner_ID:
         await interaction.response.defer()
 
         response = Funciones.get_image(prompt)
-        print("User ["+interaction.user.name+"] >> "+prompt)
-        print("[OpenAI] >> "+response)
+        print("User [" + interaction.user.name + "] >> " + prompt)
+        print("[OpenAI] >> " + response)
         await interaction.edit_original_response(content=response)
     else:
-        await interaction.response.send_message('No tienes permiso para usar este comando.')
+        await interaction.response.send_message(
+            "No tienes permiso para usar este comando."
+        )
 
 
 bot.run(Secreto.Bot_Token)
-
 
 
 """
