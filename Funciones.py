@@ -16,6 +16,26 @@ file_path = os.path.join(dir_path, "server_settings.pickle")
 # Concatenar el nombre del archivo de audio al final de la ruta
 audio_file_path = "transcriptions/voice-message.mp3"
 
+channels = [
+    258435872020627463,
+    449413264443441152,
+    1104014621200883722,
+    1104014832254070797,
+]
+
+
+def validServer(server_id):
+    return server_id in server_settings
+
+def validChannel(message):
+    return message.channel.id in channels
+
+def featureEnabled(server_id):
+    return server_settings[server_id]["feature_enabled"]
+
+
+
+
 
 # Funcion para obtener la respuesta de OpenAI a partir de un prompt
 def get_completion(prompt, model="gpt-3.5-turbo"):

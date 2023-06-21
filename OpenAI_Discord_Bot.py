@@ -34,13 +34,7 @@ bot = MyClient(intents=discord.Intents.all())
 # Set up the OpenAI API key
 openai.api_key = Secreto.OpenAI_API_KEY
 
-# Set up the Discord bot client
-channels = [
-    258435872020627463,
-    449413264443441152,
-    1104014621200883722,
-    1104014832254070797,
-]
+
 
 processed_messages = set()
 
@@ -60,10 +54,8 @@ async def on_message(message):
     # Extrae el id del servidor
     server_id = message.guild.id
 
-    # Si el servidor esta en la lista de servidores y la caracteristica esta habilitada, procesa el mensaje
-    if server_id in Funciones.server_settings and Funciones.server_settings[
-        server_id
-    ].get("feature_enabled", False):
+    # Si el servidor esta en la lista de servidores, el canal en la lista de canales, y la caracteristica esta habilitada, procesa el mensaje
+    if Funciones.validServer(server_id) and Funciones.featureEnabled(server_id) and Funciones.validChannel(message):
         if message.author == bot.user:
             return
         else:
@@ -75,20 +67,17 @@ async def on_message(message):
                     await message.reply(
                         'Mensaje de voz transcripto: \n"' + response + '"'
                     )
-                    return
                 else:
                     await message.reply(
                         "No se reconoce el formato del archivo. Solo se aceptan mensajes de voz."
                     )
-                    return
             elif isinstance(message.content, str):
                 prompt = f"{message.content}"
                 response = Funciones.get_completion(prompt)
                 print("User [" + message.author.name + "] >> " + prompt)
                 print("[OpenAI] >> " + response)
                 await message.reply(response)
-                return
-
+    
 
 # Comando para probar que el bot esta encendido
 @bot.tree.command()
