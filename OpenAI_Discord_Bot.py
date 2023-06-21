@@ -46,6 +46,7 @@ async def on_ready():
     print(f"Logged in as {bot.user}!")
 
     Funciones.load_server_settings()
+    Funciones.load_channel_ids()
 
 
 # Cada vez que entra un mensaje al canal seleccionado, el bot lo procesa y responde

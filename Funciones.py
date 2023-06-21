@@ -6,15 +6,18 @@ from pydub import AudioSegment
 
 ## Datos
 server_settings = {}
+channel_ids = {}
 
 # Obtener la ruta del directorio actual
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Concatenar el nombre del archivo de texto al final de la ruta
-file_path = os.path.join(dir_path, "server_settings.pickle")
+server_settings_file_path = os.path.join(dir_path, "config\\server_settings.pickle")
+
+channel_ids_file_path = os.path.join(dir_path, "config\\channel_ids.pickle")
 
 # Concatenar el nombre del archivo de audio al final de la ruta
-audio_file_path = "transcriptions/voice-message.mp3"
+audio_file_path = os.path.join(dir_path,"transcriptions\\voice-message.mp3")
 
 channels = [
     258435872020627463,
@@ -94,13 +97,13 @@ def transcribe_audio():
 # Carga los server settings, atrapando la excepcion en caso de que no exista el archivo
 def load_server_settings():
     try:
-        with open(file_path, "rb") as f:
+        with open(server_settings_file_path, "rb") as f:
             global server_settings
             server_settings = pickle.load(f)
             f.close()
     except FileNotFoundError:
         server_settings = {}
-        with open(file_path, "wb") as f:
+        with open(server_settings_file_path, "wb") as f:
             pickle.dump(server_settings, f)
             f.close()
 
@@ -116,6 +119,27 @@ def toggle_feature(server_id):
     )
 
     # Guarda los cambios en el archivo
-    with open(file_path, "wb") as f:
+    with open(server_settings_file_path, "wb") as f:
         pickle.dump(server_settings, f)
         f.close()
+
+
+def load_channel_ids():
+    try:
+        with open(channel_ids_file_path, "rb") as f:
+            global channel_ids
+            channel_ids = pickle.load(f)
+            f.close()
+    except FileNotFoundError:
+        channel_ids = {}
+        with open(channel_ids_file_path, "wb") as f:
+            pickle.dump(channel_ids, f)
+            f.close()
+
+def añadir_canal(channel_id):
+    if channel_id not in channels:
+        channels.append(channel_id)
+    
+def eliminar_canal(channel_id):
+    if channel_id in channels:
+        channels.remove(channel_id)
