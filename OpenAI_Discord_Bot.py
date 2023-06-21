@@ -65,17 +65,34 @@ async def on_message(message):
         if message.author == bot.user:
             return
         else:
-            prompt = f"{message.content}"
-            response = Funciones.get_completion(prompt)
-            print("User ["+message.author.name+"] >> "+prompt)
-            print("[OpenAI] >> "+response)
-            await message.reply(response)
-    else:
-        return
+            if message.attachments:
+                attachment = message.attachments[0]
+                file_extension = attachment.filename.split(".")[-1]
+                if file_extension in ["ogg"]:
+                    await Funciones.save_audio_file(message)
+                    #await message.reply('Audio recibido y guardado. Transcribiendo...')
+                    response = Funciones.transcribe_audio()
+                    await message.reply('Mensaje de voz transcripto: \n"'+response+'"')
+                    return
+                else:
+                    await message.reply('No se reconoce el formato del archivo. Solo se aceptan mensajes de voz.')
+                    return
+            elif isinstance(message.content, str):
+                prompt = f"{message.content}"
+                response = Funciones.get_completion(prompt)
+                print("User ["+message.author.name+"] >> "+prompt)
+                print("[OpenAI] >> "+response)
+                await message.reply(response)
+                return
+
+            
+
+
+        
 
 
 
-# Comando para probar que el bot esta vivo
+# Comando para probar que el bot esta encendido
 @bot.tree.command()
 @app_commands.describe()
 async def ping(interaction: discord.Interaction):

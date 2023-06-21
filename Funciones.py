@@ -1,10 +1,7 @@
 import os
 import pickle
 import openai
-
-
-
-
+from pydub import AudioSegment
 
 
 ## Datos
@@ -13,8 +10,16 @@ server_settings = {}
 # Obtener la ruta del directorio actual
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# Concatenar el nombre del archivo al final de la ruta
+# Concatenar el nombre del archivo de texto al final de la ruta
 file_path = os.path.join(dir_path, 'server_settings.pickle')
+
+# Concatenar el nombre del archivo de audio al final de la ruta
+audio_file_path = os.path.join(dir_path, "transcriptions", "voice_message.mp3")
+
+# Get the absolute path to the audio file
+abs_audio_file_path = os.path.join(audio_file_path)
+
+AudioSegment.ffmpeg = "C:/Program Files/ffmpeg-6.0-full_build/binffmpeg.exe"
 
 
 # Funcion para obtener la respuesta de OpenAI a partir de un prompt
@@ -28,6 +33,7 @@ def get_completion(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message["content"]
 
+# Funcion para obtener una imagen generada por OpenAI a partir de un prompt
 def get_image(prompt):
     response = openai.Image.create(
     prompt=prompt,
@@ -36,7 +42,32 @@ def get_image(prompt):
 )
     image_url = response['data'][0]['url']
     return image_url
+      
+async def save_audio_file(message):
+    for attachment in message.attachments:
+        # Save the audio file to disk
+        filename = attachment.filename
+        filepath = f"transcriptions/voice-message.mp3"
+        print("Saving audio file to:", filepath)
+        with open(filepath, 'wb') as f:
+            await attachment.save(f)
+            f.close()
 
+def format_to_mp3():
+    # Load the audio file
+    audio_file = AudioSegment.from_file("transcriptions/voice-message.mp3")
+
+    # Export the audio file in the MP3 format
+    audio_file.export("transcriptions/voice-message.mp3", format="mp3")
+
+# Funcion para transcribir audio a texto, utilizando el modelo "whisper-1" de OpenAI
+def transcribe_audio():
+
+    format_to_mp3()
+
+    audio_file= open("transcriptions/voice-message.mp3", "rb")
+    transcript = openai.Audio.transcribe(model="whisper-1",file=audio_file)
+    return transcript.text
 
 
 
