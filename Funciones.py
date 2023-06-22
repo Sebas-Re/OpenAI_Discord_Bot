@@ -30,6 +30,7 @@ channels = [
 def validServer(server_id):
     return server_id in server_settings
 
+# cambiar luego por channel_ids 
 def validChannel(message):
     return message.channel.id in channels
 
@@ -102,6 +103,10 @@ def load_server_settings():
             server_settings = pickle.load(f)
             f.close()
     except FileNotFoundError:
+        # Si el directorio no existe, lo crea
+        if not os.path.exists(os.path.dirname(server_settings_file_path)):
+            os.makedirs(os.path.dirname(server_settings_file_path))
+
         server_settings = {}
         with open(server_settings_file_path, "wb") as f:
             pickle.dump(server_settings, f)
@@ -131,15 +136,25 @@ def load_channel_ids():
             channel_ids = pickle.load(f)
             f.close()
     except FileNotFoundError:
+        # Si el directorio no existe, lo crea
+        if not os.path.exists(os.path.dirname(channel_ids_file_path)):
+            os.makedirs(os.path.dirname(channel_ids_file_path))
+            
         channel_ids = {}
         with open(channel_ids_file_path, "wb") as f:
             pickle.dump(channel_ids, f)
             f.close()
 
 def añadir_canal(channel_id):
-    if channel_id not in channels:
+    if channel_id not in channel_ids:
         channels.append(channel_id)
+        with open(channel_ids_file_path, "wb") as f:
+            pickle.dump(channel_ids, f)
+            f.close()
     
 def eliminar_canal(channel_id):
-    if channel_id in channels:
+    if channel_id in channel_ids:
         channels.remove(channel_id)
+        with open(channel_ids_file_path, "wb") as f:
+            pickle.dump(channel_ids, f)
+            f.close()

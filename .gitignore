@@ -154,3 +154,4 @@ Secreto.py
 server_settings.pickle
 transcriptions/voice-message.ogg
 transcriptions/voice-message.mp3
+config/channel_ids.pickle
