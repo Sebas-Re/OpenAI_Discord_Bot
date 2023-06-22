@@ -36,7 +36,6 @@ bot = MyClient(intents=discord.Intents.all())
 openai.api_key = Secreto.OpenAI_API_KEY
 
 
-
 processed_messages = set()
 
 
@@ -57,7 +56,11 @@ async def on_message(message):
     server_id = message.guild.id
 
     # Si el servidor esta en la lista de servidores, el canal en la lista de canales, y la caracteristica esta habilitada, procesa el mensaje
-    if Funciones.validServer(server_id) and Funciones.featureEnabled(server_id) and Funciones.validChannel(message):
+    if (
+        Funciones.validServer(server_id)
+        and Funciones.featureEnabled(server_id)
+        and Funciones.validChannel(message)
+    ):
         if message.author == bot.user:
             return
         else:
@@ -79,7 +82,7 @@ async def on_message(message):
                 print("User [" + message.author.name + "] >> " + prompt)
                 print("[OpenAI] >> " + response)
                 await message.reply(response)
-    
+
 
 # Comando para probar que el bot esta encendido
 @bot.tree.command()
@@ -139,21 +142,24 @@ async def imagine(interaction: discord.Interaction, prompt: str):
         )
 
 
-
 # Command for adding/removing a channel to the list of channels to read. The command should include an argument so the user can select whether to add or remove the channel.
 @bot.tree.command()
-@app_commands.describe(action="Agregar o remover un canal de la lista de canales a leer")
-async def canal(interaction: discord.Interaction, channel: discord.TextChannel, action: Literal['Añadir', 'Eliminar']):
-    #If the selected action is to add a channel, add it to the list of channels to read using the añadir_canal function.
+@app_commands.describe(
+    action="Agregar o remover un canal de la lista de canales a leer"
+)
+async def canal(
+    interaction: discord.Interaction,
+    channel: discord.TextChannel,
+    action: Literal["Añadir", "Eliminar"],
+):
+    # If the selected action is to add a channel, add it to the list of channels to read using the añadir_canal function.
     if action == "Añadir":
         Funciones.add_channel(channel.id)
         await interaction.response.send_message(f"Canal {channel.mention} agregado.")
-    #If the selected action is to remove a channel, remove it from the list of channels to read using the remover_canal function.
+    # If the selected action is to remove a channel, remove it from the list of channels to read using the remover_canal function.
     elif action == "Eliminar":
         Funciones.remove_channel(channel.id)
         await interaction.response.send_message(f"Canal {channel.mention} removido.")
-
-
 
 
 bot.run(Secreto.Bot_Token)
