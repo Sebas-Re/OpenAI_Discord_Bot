@@ -1,5 +1,6 @@
 import os
 import pickle
+from typing import Literal
 import discord
 from discord import app_commands
 import openai
@@ -136,6 +137,23 @@ async def imagine(interaction: discord.Interaction, prompt: str):
         await interaction.response.send_message(
             "No tienes permiso para usar este comando."
         )
+
+
+
+# Command for adding/removing a channel to the list of channels to read. The command should include an argument so the user can select whether to add or remove the channel.
+@bot.tree.command()
+@app_commands.describe(action="Agregar o remover un canal de la lista de canales a leer")
+async def canal(interaction: discord.Interaction, channel: discord.TextChannel, action: Literal['Añadir', 'Eliminar']):
+    #If the selected action is to add a channel, add it to the list of channels to read using the añadir_canal function.
+    if action == "Añadir":
+        Funciones.add_channel(channel.id)
+        await interaction.response.send_message(f"Canal {channel.mention} agregado.")
+    #If the selected action is to remove a channel, remove it from the list of channels to read using the remover_canal function.
+    elif action == "Eliminar":
+        Funciones.remove_channel(channel.id)
+        await interaction.response.send_message(f"Canal {channel.mention} removido.")
+
+
 
 
 bot.run(Secreto.Bot_Token)

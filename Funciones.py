@@ -19,20 +19,13 @@ channel_ids_file_path = os.path.join(dir_path, "config\\channel_ids.pickle")
 # Concatenar el nombre del archivo de audio al final de la ruta
 audio_file_path = os.path.join(dir_path,"transcriptions\\voice-message.mp3")
 
-channels = [
-    258435872020627463,
-    449413264443441152,
-    1104014621200883722,
-    1104014832254070797,
-]
-
 
 def validServer(server_id):
     return server_id in server_settings
 
 # cambiar luego por channel_ids 
 def validChannel(message):
-    return message.channel.id in channels
+    return message.channel.id in channel_ids
 
 def featureEnabled(server_id):
     return server_settings[server_id]["feature_enabled"]
@@ -71,11 +64,19 @@ async def save_audio_file(message):
     for attachment in message.attachments:
         # Save the audio file to disk
         filename = attachment.filename
-        filepath = audio_file_path
-        print("Saving audio file to:", filepath)
-        with open(filepath, "wb") as f:
+        print("Saving audio file to:", audio_file_path)
+
+        try:
+         with open(audio_file_path, "wb") as f:
             await attachment.save(f)
             f.close()
+        except FileNotFoundError:
+            #Si no existe el directorio, lo crea
+            if not os.path.exists(os.path.dirname(audio_file_path)):
+                os.makedirs(os.path.dirname(audio_file_path))
+            with open(audio_file_path, "wb") as f:
+                await attachment.save(f)
+                f.close()
 
 
 def format_to_mp3():
@@ -106,7 +107,6 @@ def load_server_settings():
         # Si el directorio no existe, lo crea
         if not os.path.exists(os.path.dirname(server_settings_file_path)):
             os.makedirs(os.path.dirname(server_settings_file_path))
-
         server_settings = {}
         with open(server_settings_file_path, "wb") as f:
             pickle.dump(server_settings, f)
@@ -139,22 +139,22 @@ def load_channel_ids():
         # Si el directorio no existe, lo crea
         if not os.path.exists(os.path.dirname(channel_ids_file_path)):
             os.makedirs(os.path.dirname(channel_ids_file_path))
-            
         channel_ids = {}
         with open(channel_ids_file_path, "wb") as f:
             pickle.dump(channel_ids, f)
             f.close()
 
-def añadir_canal(channel_id):
+def add_channel(channel_id):
     if channel_id not in channel_ids:
-        channels.append(channel_id)
-        with open(channel_ids_file_path, "wb") as f:
+         channel_ids[channel_id] ={}
+    
+    with open(channel_ids_file_path, "wb") as f:
             pickle.dump(channel_ids, f)
             f.close()
     
-def eliminar_canal(channel_id):
+def remove_channel(channel_id):
     if channel_id in channel_ids:
-        channels.remove(channel_id)
+        del channel_ids[channel_id]
         with open(channel_ids_file_path, "wb") as f:
             pickle.dump(channel_ids, f)
             f.close()
