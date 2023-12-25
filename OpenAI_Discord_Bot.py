@@ -2,7 +2,7 @@ import os
 import pickle
 from typing import Literal
 import discord
-from discord import app_commands
+from discord import Activity, ActivityType, app_commands
 import openai
 from discord.ext import commands
 import Secreto
@@ -45,6 +45,12 @@ async def on_ready():
     await bot.user.edit(username="El Oráculo")
     print(f"Logged in as {bot.user}!")
 
+    activity = Activity(type=ActivityType.playing, name="Con OpenAI")
+    await bot.change_presence(activity=activity)
+
+    #print("Printing models:"+str(openai.Model.list()))
+    #print("Printing engines:"+str(openai.Engine.list()))
+    
     Funciones.load_server_settings()
     Funciones.load_channel_ids()
 
@@ -160,6 +166,71 @@ async def canal(
     elif action == "Eliminar":
         Funciones.remove_channel(channel.id)
         await interaction.response.send_message(f"Canal {channel.mention} removido.")
+
+
+@bot.tree.command()
+@app_commands.describe(
+    idioma="Traduce el mensaje respondido al idioma seleccionado"
+)
+async def traducir(
+    interaction: discord.Interaction,
+    idioma: str,
+    
+    
+):
+# Si el mensaje seleccionado es de voz, lo descarga y lo transcribe
+    ##este está mal y debe ser editado vvvvvvvvvv
+    if interaction.message is None or interaction.message.reference is None:
+     await interaction.response.send_message("Error: interaction was not triggered by a message reply.")
+     return
+    
+    msg_sel_id = interaction.message.reference.message_id
+    mensajeSeleccionado = await interaction.channel.fetch_message(msg_sel_id)
+    if Funciones.isVoiceMessage(mensajeSeleccionado):
+        await Funciones.save_audio_file(mensajeSeleccionado)
+        # await message.reply('Audio recibido y guardado. Transcribiendo...')
+        transcription = Funciones.transcribe_audio()
+        response = Funciones.get_translation(transcription, idioma)
+        print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
+        print("[OpenAI] >> " + response)
+        await interaction.edit_original_response(
+            content='Mensaje de voz transcripto: \n"' + response + '"'
+        )
+    # Si el mensaje seleccionado es de texto, lo traduce
+    elif isinstance(mensajeSeleccionado.content, str):
+        prompt = f"{mensajeSeleccionado.content}"
+        response = Funciones.get_translation(prompt, idioma)
+        print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
+        print("[OpenAI] >> " + response)
+        await interaction.edit_original_response(content=response)
+
+
+
+"""
+@bot.tree.command()
+@app_commands.describe(mensajeSeleccionado="Responde al mensaje de texto o voz a traducir al ejecutar este comando")
+async def traducir(interaction: discord.Interaction, mensajeSeleccionado: discord.MessageReference):
+    await interaction.response.defer()
+    mensajeSeleccionado = await interaction.message.channel.fetch_message(mensajeSeleccionado.message_id)
+    # Si el mensaje seleccionado es de voz, lo descarga y lo transcribe
+    if Funciones.isVoiceMessage(mensajeSeleccionado):
+        await Funciones.save_audio_file(mensajeSeleccionado)
+        # await message.reply('Audio recibido y guardado. Transcribiendo...')
+        transcription = Funciones.transcribe_audio()
+        response = Funciones.get_translation(transcription)
+        print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
+        print("[OpenAI] >> " + response)
+        await interaction.edit_original_response(
+            content='Mensaje de voz transcripto: \n"' + response + '"'
+        )
+    # Si el mensaje seleccionado es de texto, lo traduce
+    elif isinstance(mensajeSeleccionado.content, str):
+        prompt = f"{mensajeSeleccionado.content}"
+        response = Funciones.get_translation(prompt)
+        print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
+        print("[OpenAI] >> " + response)
+        await interaction.edit_original_response(content=response)
+"""
 
 
 bot.run(Secreto.Bot_Token)

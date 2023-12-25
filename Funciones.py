@@ -51,6 +51,17 @@ def get_image(prompt):
     image_url = response["data"][0]["url"]
     return image_url
 
+def get_translation(target_message, target_language="en", model="gpt-3.5-turbo"):
+    prompt = f"Translate the following message to {target_language}:\n{target_message}"
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0,  # this is the degree of randomness of the model's output
+        max_tokens=400,  # this is the maximum number of tokens that the model will generate
+    )
+    return response.choices[0].message["content"]
+
 
 def isVoiceMessage(message):
     attachment = message.attachments[0]
