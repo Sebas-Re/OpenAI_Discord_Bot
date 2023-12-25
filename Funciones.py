@@ -7,6 +7,7 @@ from pydub import AudioSegment
 ## Datos
 server_settings = {}
 channel_ids = {}
+GPT_Model = "gpt-3.5-turbo"
 
 # Obtener la ruta del directorio actual
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -34,7 +35,7 @@ def featureEnabled(server_id):
 
 
 # Funcion para obtener la respuesta de OpenAI a partir de un prompt
-def get_completion(prompt, model="gpt-3.5-turbo"):
+def get_completion(prompt, model=GPT_Model):
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
@@ -51,7 +52,7 @@ def get_image(prompt):
     image_url = response["data"][0]["url"]
     return image_url
 
-def get_translation(target_message, target_language="en", model="gpt-3.5-turbo"):
+def get_translation(target_message, target_language="en", model=GPT_Model):
     prompt = f"Translate the following message to {target_language}:\n{target_message}"
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
@@ -170,3 +171,16 @@ def remove_channel(channel_id):
         with open(channel_ids_file_path, "wb") as f:
             pickle.dump(channel_ids, f)
             f.close()
+
+
+# Function to set the model to use. The model can be "3", "4" or "4 Vision". Defaults to gpt-3.5-turbo everytime the bot gets reloaded, to avoid wasting money.
+def set_model(model):
+    global GPT_Model
+
+    # If the model is equal to "3", set the model to "gpt-3.5-turbo". If the model is equal to 4, set the model to "gpt-4-1106-preview". If the model is equal to "4 Vision", set the model to "gpt-4-vision-preview".
+    if model == "3":
+        GPT_Model = "gpt-3.5-turbo"
+    elif model == "4":
+        GPT_Model = "gpt-4-1106-preview"
+    elif model == "4 Vision":
+        GPT_Model = "gpt-4-vision-preview"

@@ -38,7 +38,6 @@ openai.api_key = Secreto.OpenAI_API_KEY
 
 processed_messages = set()
 
-
 # Cuando el bot se conecta, cambia su nombre a 'Yggdrasil' y lo informa en consola
 @bot.event
 async def on_ready():
@@ -166,6 +165,39 @@ async def canal(
     elif action == "Eliminar":
         Funciones.remove_channel(channel.id)
         await interaction.response.send_message(f"Canal {channel.mention} removido.")
+
+
+# Command for selecting between GPT 3 and 4. The command should include an argument so the user can select which model to use. The default should be GPT 3. Command is restricted to the bot owner.
+@bot.tree.command()
+@app_commands.describe(
+    action="Seleccionar entre GPT 3, 4 y 4 Vision"
+)
+async def gpt(
+    interaction: discord.Interaction,
+    channel: discord.TextChannel,
+    action: Literal["3", "4", "4 Vision"],
+):
+
+    # Checks if the user is the bot owner.
+    if interaction.user.id == Secreto.Owner_ID:
+        # If the selected action is "3" (GPT 3), set the model to GPT 3.
+        if action == "3":
+            Funciones.set_model("3")
+            await interaction.response.send_message(f"Modelo seleccionado: GPT 3.")
+        
+        # If the selected action is "4" (GPT 4), set the model to GPT 4.
+        elif action == "4":
+            Funciones.set_model("4")
+            await interaction.response.send_message(f"Modelo seleccionado: GPT 4.")
+        
+        # If the selected action is "4 Vision" (GPT 4 Vision), set the model to GPT 4 Vision.
+        elif action == "4 Vision":
+            Funciones.set_model("4 Vision")
+            await interaction.response.send_message(f"Modelo seleccionado: GPT 4 Vision.")
+    else:
+        await interaction.response.send_message(
+            "No tienes permiso para usar este comando."
+        )
 
 
 @bot.tree.command()
