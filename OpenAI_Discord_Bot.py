@@ -6,7 +6,6 @@ from discord import Activity, ActivityType, app_commands
 import openai
 from openai import OpenAI
 from discord.ext import commands
-import Secreto
 import Funciones
 from dotenv import load_dotenv
 
@@ -43,7 +42,7 @@ client = OpenAI(
 
 processed_messages = set()
 
-# Cuando el bot se conecta, cambia su nombre a 'Yggdrasil' y lo informa en consola
+# Cuando el bot se conecta, cambia su nombre a 'El Oráculo' y lo informa en consola
 @bot.event
 async def on_ready():
     await bot.user.edit(username="El Oráculo")
@@ -140,7 +139,7 @@ async def consulta(interaction: discord.Interaction, consulta: str):
 @app_commands.describe(prompt="Prompt para generar la imagen")
 async def imagine(interaction: discord.Interaction, prompt: str):
     # Restrict the command to the bot owner, basicamente porque es caro y no quiero que se abuse (Ademas de que, seamos honestos, Midjourney es mejor)
-    if interaction.user.id == Secreto.Owner_ID:
+    if interaction.user.id == int(os.getenv("Owner_ID")):
         await interaction.response.defer()
 
         response = Funciones.get_image(prompt)
@@ -181,11 +180,11 @@ async def canal(
 async def gpt(
     interaction: discord.Interaction,
     channel: discord.TextChannel,
-    action: Literal["3", "4", "4 Vision"],
+    action: Literal["3", "4", "01-mini"],
 ):
 
     # Checks if the user is the bot owner.
-    if interaction.user.id == Secreto.Owner_ID:
+    if interaction.user.id == int(os.getenv("Owner_ID")):
         # If the selected action is "3" (GPT 3), set the model to GPT 3.
         if action == "3":
             Funciones.set_model("3")
@@ -197,7 +196,7 @@ async def gpt(
             await interaction.response.send_message(f"Modelo seleccionado: GPT 4o.")
         
         # If the selected action is "01-mini" (GPT 01-mini), set the model to GPT 01-mini.
-        elif action == "4 Vision":
+        elif action == "01-mini":
             Funciones.set_model("01-mini")
             await interaction.response.send_message(f"Modelo seleccionado: GPT 01-mini.")
     else:
@@ -272,7 +271,7 @@ async def traducir(interaction: discord.Interaction, mensajeSeleccionado: discor
 """
 
 
-bot.run(Secreto.Bot_Token)
+bot.run(os.getenv("Bot_Token"))
 
 
 """
