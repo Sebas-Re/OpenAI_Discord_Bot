@@ -90,20 +90,11 @@ async def save_audio_file(message):
                 f.close()
 
 
-def format_to_mp3():
-    # Load the audio file
-    audio_file = AudioSegment.from_file(audio_file_path)
-
-    # Export the audio file in the MP3 format
-    audio_file.export(audio_file_path, format="mp3")
-
 
 # Funcion para transcribir audio a texto, utilizando el modelo "whisper-1" de OpenAI
-def transcribe_audio():
-    format_to_mp3()
-
+def transcribe_audio(client):
     audio_file = open(audio_file_path, "rb")
-    transcript = openai.Audio.transcribe(model="whisper-1", file=audio_file)
+    transcript = client.audio.transcriptions.create(model="whisper-1", file=audio_file)
     return transcript.text
 
 

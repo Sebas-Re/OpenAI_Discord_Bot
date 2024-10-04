@@ -78,7 +78,7 @@ async def on_message(message):
                 if Funciones.isVoiceMessage(message):
                     await Funciones.save_audio_file(message)
                     # await message.reply('Audio recibido y guardado. Transcribiendo...')
-                    response = Funciones.transcribe_audio()
+                    response = Funciones.transcribe_audio(client)
                     await message.reply(
                         'Mensaje de voz transcripto: \n"' + response + '"'
                     )
@@ -86,6 +86,7 @@ async def on_message(message):
                     await message.reply(
                         "No se reconoce el formato del archivo. Solo se aceptan mensajes de voz."
                     )
+
             elif isinstance(message.content, str):
                 prompt = f"{message.content}"
                 response = Funciones.get_completion(client, prompt)
@@ -227,7 +228,7 @@ async def traducir(
     if Funciones.isVoiceMessage(mensajeSeleccionado):
         await Funciones.save_audio_file(mensajeSeleccionado)
         # await message.reply('Audio recibido y guardado. Transcribiendo...')
-        transcription = Funciones.transcribe_audio()
+        transcription = Funciones.transcribe_audio(client)
         response = Funciones.get_translation(transcription, idioma)
         print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
         print("[OpenAI] >> " + str(response))
