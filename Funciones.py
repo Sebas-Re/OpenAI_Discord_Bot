@@ -35,15 +35,15 @@ def featureEnabled(server_id):
 
 
 # Funcion para obtener la respuesta de OpenAI a partir de un prompt
-def get_completion(prompt, model=GPT_Model):
+def get_completion(Client, prompt, model=GPT_Model):
     messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
+    response = Client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=0,  # this is the degree of randomness of the model's output
         max_tokens=400,  # this is the maximum number of tokens that the model will generate
     )
-    return response.choices[0].message["content"]
+    return response.choices[0].message.content
 
 
 # Funcion para obtener una imagen generada por OpenAI a partir de un prompt
@@ -61,7 +61,7 @@ def get_translation(target_message, target_language="en", model=GPT_Model):
         temperature=0,  # this is the degree of randomness of the model's output
         max_tokens=400,  # this is the maximum number of tokens that the model will generate
     )
-    return response.choices[0].message["content"]
+    return response.choices[0].message.content
 
 
 def isVoiceMessage(message):
@@ -173,14 +173,14 @@ def remove_channel(channel_id):
             f.close()
 
 
-# Function to set the model to use. The model can be "3", "4" or "4 Vision". Defaults to gpt-3.5-turbo everytime the bot gets reloaded, to avoid wasting money.
+# Function to set the model to use. The model can be "3", "4" or "01-mini". Defaults to gpt-3.5-turbo everytime the bot gets reloaded, to avoid wasting money.
 def set_model(model):
     global GPT_Model
 
-    # If the model is equal to "3", set the model to "gpt-3.5-turbo". If the model is equal to 4, set the model to "gpt-4-1106-preview". If the model is equal to "4 Vision", set the model to "gpt-4-vision-preview".
+    # If the model is equal to "3", set the model to "gpt-3.5-turbo". If the model is equal to 4, set the model to "gpt-4o". If the model is equal to "01-mini", set the model to "01-mini".
     if model == "3":
-        GPT_Model = "gpt-3.5-turbo"
+        GPT_Model = "gpt-3.5-turbo-0125"
     elif model == "4":
-        GPT_Model = "gpt-4-1106-preview"
-    elif model == "4 Vision":
-        GPT_Model = "gpt-4-vision-preview"
+        GPT_Model = "gpt-4o"
+    elif model == "01-mini":
+        GPT_Model = "o1-mini"
