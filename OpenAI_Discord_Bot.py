@@ -4,9 +4,11 @@ from typing import Literal
 import discord
 from discord import Activity, ActivityType, app_commands
 import openai
+from openai import OpenAI
 from discord.ext import commands
 import Secreto
 import Funciones
+from dotenv import load_dotenv
 
 
 class MyClient(discord.Client):
@@ -31,10 +33,13 @@ class MyClient(discord.Client):
 
 bot = MyClient(intents=discord.Intents.all())
 
+# Load the environment variables
+load_dotenv()
 
 # Set up the OpenAI API key
-openai.api_key = Secreto.OpenAI_API_KEY
-
+client = OpenAI(
+    api_key=os.environ.get("OpenAI_API_KEY"),
+)
 
 processed_messages = set()
 
@@ -83,9 +88,9 @@ async def on_message(message):
                     )
             elif isinstance(message.content, str):
                 prompt = f"{message.content}"
-                response = Funciones.get_completion(prompt)
+                response = Funciones.get_completion(client, prompt)
                 print("User [" + message.author.name + "] >> " + prompt)
-                print("[OpenAI] >> " + response)
+                print("[OpenAI] >> " + str(response))
                 await message.reply(response)
 
 
@@ -122,9 +127,9 @@ async def leerchat(interaction: discord.Interaction):
 async def consulta(interaction: discord.Interaction, consulta: str):
     await interaction.response.defer()
 
-    response = Funciones.get_completion(consulta)
+    response = Funciones.get_completion(client, consulta)
     print("User [" + interaction.user.name + "] >> " + consulta)
-    print("[OpenAI] >> " + response)
+    print("[OpenAI] >> " + str(response))
 
     await interaction.edit_original_response(content=response)
 
@@ -139,7 +144,7 @@ async def imagine(interaction: discord.Interaction, prompt: str):
 
         response = Funciones.get_image(prompt)
         print("User [" + interaction.user.name + "] >> " + prompt)
-        print("[OpenAI] >> " + response)
+        print("[OpenAI] >> " + str(response))
         await interaction.edit_original_response(content=response)
     else:
         await interaction.response.send_message(
@@ -185,15 +190,15 @@ async def gpt(
             Funciones.set_model("3")
             await interaction.response.send_message(f"Modelo seleccionado: GPT 3.")
         
-        # If the selected action is "4" (GPT 4), set the model to GPT 4.
+        # If the selected action is "4" (GPT gpt-4o), set the model to GPT gpt-4o.
         elif action == "4":
             Funciones.set_model("4")
-            await interaction.response.send_message(f"Modelo seleccionado: GPT 4.")
+            await interaction.response.send_message(f"Modelo seleccionado: GPT 4o.")
         
-        # If the selected action is "4 Vision" (GPT 4 Vision), set the model to GPT 4 Vision.
+        # If the selected action is "01-mini" (GPT 01-mini), set the model to GPT 01-mini.
         elif action == "4 Vision":
-            Funciones.set_model("4 Vision")
-            await interaction.response.send_message(f"Modelo seleccionado: GPT 4 Vision.")
+            Funciones.set_model("01-mini")
+            await interaction.response.send_message(f"Modelo seleccionado: GPT 01-mini.")
     else:
         await interaction.response.send_message(
             "No tienes permiso para usar este comando."
@@ -205,18 +210,19 @@ async def gpt(
     idioma="Traduce el mensaje respondido al idioma seleccionado"
 )
 async def traducir(
-    interaction: discord.Interaction,
+    interaction: discord.MessageInteractionMetadata,
     idioma: str,
     
     
 ):
 # Si el mensaje seleccionado es de voz, lo descarga y lo transcribe
     ##este está mal y debe ser editado vvvvvvvvvv
-    if interaction.message is None or interaction.message.reference is None:
+    
+    if interaction.interacted_message is None:
      await interaction.response.send_message("Error: interaction was not triggered by a message reply.")
      return
     
-    msg_sel_id = interaction.message.reference.message_id
+    msg_sel_id = interaction.interacted_message_id
     mensajeSeleccionado = await interaction.channel.fetch_message(msg_sel_id)
     if Funciones.isVoiceMessage(mensajeSeleccionado):
         await Funciones.save_audio_file(mensajeSeleccionado)
@@ -224,7 +230,7 @@ async def traducir(
         transcription = Funciones.transcribe_audio()
         response = Funciones.get_translation(transcription, idioma)
         print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
-        print("[OpenAI] >> " + response)
+        print("[OpenAI] >> " + str(response))
         await interaction.edit_original_response(
             content='Mensaje de voz transcripto: \n"' + response + '"'
         )
@@ -233,7 +239,7 @@ async def traducir(
         prompt = f"{mensajeSeleccionado.content}"
         response = Funciones.get_translation(prompt, idioma)
         print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
-        print("[OpenAI] >> " + response)
+        print("[OpenAI] >> " + str(response))
         await interaction.edit_original_response(content=response)
 
 
@@ -251,7 +257,7 @@ async def traducir(interaction: discord.Interaction, mensajeSeleccionado: discor
         transcription = Funciones.transcribe_audio()
         response = Funciones.get_translation(transcription)
         print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
-        print("[OpenAI] >> " + response)
+        print("[OpenAI] >> " + str(response))
         await interaction.edit_original_response(
             content='Mensaje de voz transcripto: \n"' + response + '"'
         )
@@ -260,7 +266,7 @@ async def traducir(interaction: discord.Interaction, mensajeSeleccionado: discor
         prompt = f"{mensajeSeleccionado.content}"
         response = Funciones.get_translation(prompt)
         print("User [" + mensajeSeleccionado.author.name + "] >> " + prompt)
-        print("[OpenAI] >> " + response)
+        print("[OpenAI] >> " + str(response))
         await interaction.edit_original_response(content=response)
 """
 
