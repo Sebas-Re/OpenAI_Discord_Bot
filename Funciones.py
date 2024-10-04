@@ -7,7 +7,7 @@ from pydub import AudioSegment
 ## Datos
 server_settings = {}
 channel_ids = {}
-GPT_Model = "gpt-3.5-turbo"
+GPT_Model = "gpt-4o"
 
 # Obtener la ruta del directorio actual
 dir_path = os.path.dirname(os.path.realpath(__file__))
